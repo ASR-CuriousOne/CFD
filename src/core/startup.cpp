@@ -19,8 +19,11 @@ namespace Core{
             
             if(s == "N"){
                 std::cout << "Bye Bye \\-_-/ \n";
+                return 0;
                 break;
             }
         }
     }
+
+    
 }
