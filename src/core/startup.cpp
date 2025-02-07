@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include "../../imgui/imgui.h"
 
 namespace Core{
 
@@ -7,7 +8,6 @@ namespace Core{
 
     int InitializeApplication(){
         std::cout << "Application Started" << '\n';
-
         return StartLoop();
     }
 
