@@ -33,4 +33,4 @@ clean:
 run: all
 	./$(BIN)
 
-.PHONY: all clean Run
+.PHONY: all clean run
