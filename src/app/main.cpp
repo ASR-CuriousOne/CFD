@@ -1,6 +1,7 @@
 #include "../core/core.hpp"
-#include "../renderer/renderer.hpp"
 
-int main(){
-    Core::InitializeApplication();
+int main() {
+    Core::Application app;
+
+   
 }
