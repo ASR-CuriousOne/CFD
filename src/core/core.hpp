@@ -1,18 +1,30 @@
 #ifndef CORE_H
 #define CORE_H
 
+#include <cstdint>
+#include <optional>
 #include <vector>
 #include <vulkan/vulkan_core.h>
-#include <iostream>
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
 namespace Core{
+    struct QueueFamilyIndices {
+        std::optional<uint32_t> graphicsFamily;
+
+        bool isComplete(){
+            return graphicsFamily.has_value(); 
+        }
+    };
+
     class Application{
                
         GLFWwindow* m_window;
         VkInstance m_vkInstance;
-        VkDebugUtilsMessengerEXT debugMessenger;   
+        VkDebugUtilsMessengerEXT m_debugMessenger;   
+        VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
+        VkDevice m_device;
+        VkQueue m_graphicsQueue;
         
         const std::vector<const char*> validationLayers = {
             "VK_LAYER_KHRONOS_validation"
@@ -32,19 +44,20 @@ namespace Core{
 
         void createInstance();
         void setupDebugMessenger(); 
-
+        
+        void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
         bool checkValidationLayerSupport();
         
         std::vector<const char*> getRequiredExtensions();
 
-        static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,VkDebugUtilsMessageTypeFlagsEXT messageType,
-        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,void* pUserData) {
+        //Physical Devices
+        void pickPhysicalDevice();
+        bool isDeviceSuitable(VkPhysicalDevice device);
+        QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
-        std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
-
-            return VK_FALSE;
-        }
-
+        //Make Logical Devices
+        void createLogicalDevice();
+            
         VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger); 
 
         void InitializeVulkan();
@@ -53,7 +66,7 @@ namespace Core{
          
         void CleanUp();
 
-        void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
+        void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT m_debugMessenger, const VkAllocationCallbacks* pAllocator);
     };
 }
 #endif
