@@ -4,16 +4,16 @@
 #include <cstdint>
 #include <optional>
 #include <vector>
-#include <vulkan/vulkan_core.h>
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
 namespace Core{
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;
+        std::optional<uint32_t> presentFamily;
 
         bool isComplete(){
-            return graphicsFamily.has_value(); 
+            return graphicsFamily.has_value() && presentFamily.has_value(); 
         }
     };
 
@@ -24,8 +24,10 @@ namespace Core{
         VkDebugUtilsMessengerEXT m_debugMessenger;   
         VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
         VkDevice m_device;
-        VkQueue m_graphicsQueue;
+        VkQueue m_graphicsQueue = VK_NULL_HANDLE;
+        VkQueue m_presentQueue = VK_NULL_HANDLE;
         VkSurfaceKHR m_surface = VK_NULL_HANDLE;
+
         
         const std::vector<const char*> validationLayers = {
             "VK_LAYER_KHRONOS_validation"

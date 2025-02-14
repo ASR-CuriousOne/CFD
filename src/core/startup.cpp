@@ -227,7 +227,12 @@ namespace Core{
         for (const auto& queueFamily : allQueueFamilies) {
             if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
                 indices.graphicsFamily = i;
-                
+                VkBool32 presentSupport = false;
+                vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_surface, &presentSupport); 
+                if (presentSupport) {
+                    indices.presentFamily = i;
+                }
+
             }
 
             i++;
@@ -241,22 +246,34 @@ namespace Core{
     void Application::createLogicalDevice(){
         QueueFamilyIndices indices = findQueueFamilies(m_physicalDevice);
         
-        VkDeviceQueueCreateInfo queueCreateInfo{};
-        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
-        queueCreateInfo.queueCount = 1;
-        float queueFamilyPriority = 1.0f;
-        queueCreateInfo.pQueuePriorities = &queueFamilyPriority;
+        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+        std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+
+        float queuePriority = 1.0f;
+        for (uint32_t queueFamily : uniqueQueueFamilies) {
+            VkDeviceQueueCreateInfo queueCreateInfo{};
+            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueCreateInfo.queueFamilyIndex = queueFamily;
+            queueCreateInfo.queueCount = 1;
+            queueCreateInfo.pQueuePriorities = &queuePriority;
+            queueCreateInfos.push_back(queueCreateInfo);
+            
+        }
 
         VkPhysicalDeviceFeatures deviceFeatures{};
         
         VkDeviceCreateInfo deviceCreateInfo{};
 
         deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        deviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
-        deviceCreateInfo.queueCreateInfoCount = 1;
+
+        deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+        deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
+
         deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
+
         deviceCreateInfo.enabledExtensionCount = 0;
+
+       
 
         if(enableValidationLayers){
             deviceCreateInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
@@ -265,12 +282,15 @@ namespace Core{
         else{
             deviceCreateInfo.enabledLayerCount = 0;
         }
-
+ 
         if(vkCreateDevice(m_physicalDevice,&deviceCreateInfo,nullptr,&m_device) != VK_SUCCESS){
-            throw std::runtime_error("failde to create logical device");
+            throw std::runtime_error("failed to create logical device");
         }
+        
 
         vkGetDeviceQueue(m_device, indices.graphicsFamily.value(), 0, &m_graphicsQueue);
+        vkGetDeviceQueue(m_device, indices.presentFamily.value(), 0, &m_presentQueue);
+
     }   
     
     void Application::createSurface(){
