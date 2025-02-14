@@ -1,11 +1,13 @@
-#include <GLFW/glfw3.h>
 #include <cstdint>
+#include <set>
 #include <cstring>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
-#include <vulkan/vulkan_core.h>
 #include "core.hpp"
+#include <GLFW/glfw3.h>
+#include <vulkan/vulkan_core.h>
+
 
 #define HEIGHT 600
 #define WIDTH 800
@@ -30,7 +32,6 @@ namespace Core{
         InitializeVulkan();
         std::cout << "Application Initilized" << '\n';
         StartLoop();
-        CleanUp();
     }
     
     void Application::InitializeWindow(){
@@ -173,6 +174,7 @@ namespace Core{
     void Application::InitializeVulkan(){
         createInstance();
         setupDebugMessenger();
+        createSurface() ;
         pickPhysicalDevice();  
         createLogicalDevice();
     }
@@ -225,6 +227,7 @@ namespace Core{
         for (const auto& queueFamily : allQueueFamilies) {
             if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
                 indices.graphicsFamily = i;
+                
             }
 
             i++;
@@ -270,6 +273,12 @@ namespace Core{
         vkGetDeviceQueue(m_device, indices.graphicsFamily.value(), 0, &m_graphicsQueue);
     }   
     
+    void Application::createSurface(){
+        if (glfwCreateWindowSurface(m_vkInstance, m_window, nullptr, &m_surface) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create window surface!");
+        }
+    }
+
     void Application::StartLoop(){
         std::cout << "Application loop started.\n";
         while(!glfwWindowShouldClose(m_window)){
@@ -279,8 +288,10 @@ namespace Core{
         std::cout << "Application Closed.\n";
     }
         
-    void Application::CleanUp(){
+    Application::~Application(){
         std::cout << "Cleaning Up.......\n";
+        
+        vkDestroySurfaceKHR(m_vkInstance, m_surface, nullptr);
         vkDestroyDevice(m_device, nullptr);
         if (enableValidationLayers) {
             DestroyDebugUtilsMessengerEXT(m_vkInstance, m_debugMessenger, nullptr);

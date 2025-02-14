@@ -25,6 +25,7 @@ namespace Core{
         VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
         VkDevice m_device;
         VkQueue m_graphicsQueue;
+        VkSurfaceKHR m_surface = VK_NULL_HANDLE;
         
         const std::vector<const char*> validationLayers = {
             "VK_LAYER_KHRONOS_validation"
@@ -57,14 +58,17 @@ namespace Core{
 
         //Make Logical Devices
         void createLogicalDevice();
-            
+        
+        //create Surface
+        void createSurface();
+
         VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger); 
 
         void InitializeVulkan();
 
         void StartLoop();
          
-        void CleanUp();
+        ~Application();
 
         void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT m_debugMessenger, const VkAllocationCallbacks* pAllocator);
     };
