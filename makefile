@@ -1,6 +1,6 @@
 
 CXX = g++
-CXXFLAGS = -Wall -Wextra -std=c++17 -g
+CXXFLAGS = -Wall -Wextra -std=c++17 -g -MMD -MP
 LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 SRC_DIR = src
 BUILD_DIR = build
