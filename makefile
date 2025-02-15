@@ -4,7 +4,7 @@ CXXFLAGS = -Wall -Wextra -std=c++17 -g
 LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 SRC_DIR = src
 BUILD_DIR = build
-BIN = app
+BIN = App
 
 # Find all C++ source files
 SRC = $(wildcard $(SRC_DIR)/*/*.cpp)
