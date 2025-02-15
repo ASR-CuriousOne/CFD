@@ -1,6 +1,6 @@
 
 CXX = g++
-CXXFLAGS = -Wall -Wextra -std=c++17 -g -fsanitize=address
+CXXFLAGS = -Wall -Wextra -std=c++17 -g
 LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 SRC_DIR = src
 BUILD_DIR = build
