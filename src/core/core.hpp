@@ -38,6 +38,7 @@ namespace Core{
         std::vector<VkImage> m_swapChainImages;
         VkFormat m_swapChainImageFormat;
         VkExtent2D swapChainExtent;
+        std::vector<VkImageView> m_swapChainImageViews;
        
         const std::vector<const char*> validationLayers = {
             "VK_LAYER_KHRONOS_validation"
@@ -86,6 +87,9 @@ namespace Core{
         VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
         VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
         void createSwapChain();
+
+        //Make ImageViews 
+        void createImageViews();
 
         VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger); 
 
