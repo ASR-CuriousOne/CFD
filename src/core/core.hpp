@@ -35,6 +35,9 @@ namespace Core{
         VkQueue m_presentQueue = VK_NULL_HANDLE;
         VkSurfaceKHR m_surface = VK_NULL_HANDLE;
         VkSwapchainKHR m_swapChain = VK_NULL_HANDLE;
+        std::vector<VkImage> m_swapChainImages;
+        VkFormat m_swapChainImageFormat;
+        VkExtent2D swapChainExtent;
        
         const std::vector<const char*> validationLayers = {
             "VK_LAYER_KHRONOS_validation"
