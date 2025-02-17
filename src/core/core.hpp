@@ -1,5 +1,6 @@
 #ifndef CORE_H
 #define CORE_H
+#define NDEBUG
 #include <cstdint>
 #include <cwchar>
 #include <optional>
@@ -42,6 +43,12 @@ namespace Core{
         VkPipelineLayout m_pipelineLayout;
         VkRenderPass m_renderPass;
         VkPipeline m_graphicsPipeline;
+        std::vector<VkFramebuffer> m_swapChainFramebuffers;
+        VkCommandPool m_commandPool;
+        VkCommandBuffer m_commandBuffer;
+        VkSemaphore m_imageAvailableSemaphore;
+        VkSemaphore m_renderFinishedSemaphore;
+        VkFence m_inFlightFence;
 
        
         const std::vector<const char*> validationLayers = {
@@ -50,6 +57,7 @@ namespace Core{
         const std::vector<const char*> m_deviceExtensions = {
 VK_KHR_SWAPCHAIN_EXTENSION_NAME
         };
+
 
 
 #ifdef NDEBUG
@@ -70,7 +78,7 @@ VK_KHR_SWAPCHAIN_EXTENSION_NAME
         
         void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
         bool checkValidationLayerSupport();
-        
+
         std::vector<const char*> getRequiredExtensions();
 
         //Physical Devices
@@ -100,10 +108,22 @@ VK_KHR_SWAPCHAIN_EXTENSION_NAME
         VkShaderModule createShaderModule(const std::vector<char>& code);       
         void createRenderPass();
 
+        //Create Frame Buffers
+        void createFramebuffers();
+
+        //Create Command Buffer
+        void createCommandPool();
+        void createCommandBuffer();
+        void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+
+        //Drawing to Frame
+        void drawFrame();
+        void createSyncObjects();
+
         VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger); 
 
         void InitializeVulkan();
-
+        
         void StartLoop();
          
         ~Application();
