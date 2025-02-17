@@ -1,6 +1,5 @@
 #ifndef CORE_H
 #define CORE_H
-#define NDEBUG
 #include <cstdint>
 #include <cwchar>
 #include <optional>
@@ -18,6 +17,8 @@ namespace Core{
             return graphicsFamily.has_value() && presentFamily.has_value(); 
         }
     };
+    
+    const int MAX_FRAMES_IN_FLIGHT = 2;
 
     struct SwapChainSupportDetails {
         VkSurfaceCapabilitiesKHR capabilities;
@@ -45,10 +46,11 @@ namespace Core{
         VkPipeline m_graphicsPipeline;
         std::vector<VkFramebuffer> m_swapChainFramebuffers;
         VkCommandPool m_commandPool;
-        VkCommandBuffer m_commandBuffer;
-        VkSemaphore m_imageAvailableSemaphore;
-        VkSemaphore m_renderFinishedSemaphore;
-        VkFence m_inFlightFence;
+        std::vector<VkCommandBuffer> m_commandBuffers;
+        std::vector<VkSemaphore> m_imageAvailableSemaphores;
+        std::vector<VkSemaphore> m_renderFinishedSemaphores;
+        std::vector<VkFence> m_inFlightFences;
+        uint32_t currentFrame = 0;
 
        
         const std::vector<const char*> validationLayers = {
@@ -113,7 +115,7 @@ VK_KHR_SWAPCHAIN_EXTENSION_NAME
 
         //Create Command Buffer
         void createCommandPool();
-        void createCommandBuffer();
+        void createCommandBuffers();
         void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
         //Drawing to Frame

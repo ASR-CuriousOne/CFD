@@ -1,10 +1,21 @@
+OS := $(shell uname -s)
 
 CXX = g++
-CXXFLAGS = -Wall -Wextra -std=c++17 -g -MMD -MP
-LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 SRC_DIR = src
 BUILD_DIR = build
-BIN = App
+ifeq ($(OS), Windows_NT)  # Windows
+    OUT_EXT := .exe
+	CXXFLAGS = -Wall -Wextra -std=c++17 -g -MMD -MP
+	LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
+
+else  # Linux/macOS
+	CXXFLAGS = -Wall -Wextra -std=c++17 -g -MMD -MP
+	LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
+    OUT_EXT :=
+endif
+
+BIN := App
+BIN := $(BIN)$(OUT_EXT)
 
 # Find all C++ source files
 SRC = $(wildcard $(SRC_DIR)/*/*.cpp)

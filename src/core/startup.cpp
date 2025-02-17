@@ -77,7 +77,7 @@ namespace Core{
         createGraphicsPipeline();
         createFramebuffers();
         createCommandPool();
-        createCommandBuffer();
+        createCommandBuffers();
         createSyncObjects();
     }
 
@@ -697,14 +697,16 @@ namespace Core{
         }
     }
 
-    void Application::createCommandBuffer(){
+    void Application::createCommandBuffers(){
+        m_commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.commandPool = m_commandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = 1;
+        allocInfo.commandBufferCount = (uint32_t) m_commandBuffers.size();
 
-        if (vkAllocateCommandBuffers(m_device, &allocInfo, &m_commandBuffer) != VK_SUCCESS) {
+        if (vkAllocateCommandBuffers(m_device, &allocInfo, m_commandBuffers.data()) != VK_SUCCESS) {
            throw std::runtime_error("failed to allocate command buffers!");
         }   
 
@@ -759,33 +761,33 @@ namespace Core{
    
     //Drawing
     void Application::drawFrame(){
-        vkWaitForFences(m_device, 1, &m_inFlightFence, VK_TRUE, UINT64_MAX);
-        vkResetFences(m_device, 1, &m_inFlightFence);
+        vkWaitForFences(m_device, 1, &m_inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+        vkResetFences(m_device, 1, &m_inFlightFences[currentFrame]);
 
         uint32_t imageIndex;
-        vkAcquireNextImageKHR(m_device, m_swapChain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+        vkAcquireNextImageKHR(m_device, m_swapChain, UINT64_MAX, m_imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
-        vkResetCommandBuffer(m_commandBuffer, /*VkCommandBufferResetFlagBits*/ 0);
-        recordCommandBuffer(m_commandBuffer, imageIndex);
+        vkResetCommandBuffer(m_commandBuffers[currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
+        recordCommandBuffer(m_commandBuffers[currentFrame], imageIndex);
 
 
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        VkSemaphore waitSemaphores[] = {m_imageAvailableSemaphore};
+        VkSemaphore waitSemaphores[] = {m_imageAvailableSemaphores[currentFrame]};
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
         submitInfo.pWaitDstStageMask = waitStages;
 
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &m_commandBuffer;
+        submitInfo.pCommandBuffers = &m_commandBuffers[currentFrame];
 
-        VkSemaphore signalSemaphores[] = {m_renderFinishedSemaphore};
+        VkSemaphore signalSemaphores[] = {m_renderFinishedSemaphores[currentFrame]};
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, m_inFlightFence) != VK_SUCCESS) {
+        if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, m_inFlightFences[currentFrame]) != VK_SUCCESS) {
             throw std::runtime_error("failed to submit draw command buffer!");
         }
 
@@ -802,27 +804,36 @@ namespace Core{
         presentInfo.pImageIndices = &imageIndex;
 
         vkQueuePresentKHR(m_presentQueue, &presentInfo);
+
+        currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
     void Application::createSyncObjects(){
+        m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+        m_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+        m_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+
         VkSemaphoreCreateInfo semaphoreInfo{};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
         VkFenceCreateInfo fenceInfo{};
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            if (vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
+                vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
+                vkCreateFence(m_device, &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS){
+                throw std::runtime_error("failed to create semaphores!");
+            }
 
-        if (vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
-            vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS ||
-            vkCreateFence(m_device, &fenceInfo, nullptr, &m_inFlightFence) != VK_SUCCESS){
-            throw std::runtime_error("failed to create semaphores!");
         }
+        
     }
 
     void Application::StartLoop(){
         std::cout << "Application loop started.\n";
         while(!glfwWindowShouldClose(m_window)){
-
             glfwPollEvents();
             drawFrame(); 
 
@@ -835,11 +846,11 @@ namespace Core{
         
     Application::~Application(){
         std::cout << "Cleaning Up.......\n";
-
-        vkDestroySemaphore(m_device, m_imageAvailableSemaphore, nullptr);
-        vkDestroySemaphore(m_device, m_renderFinishedSemaphore, nullptr);
-        vkDestroyFence(m_device, m_inFlightFence, nullptr);
-        
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            vkDestroySemaphore(m_device, m_imageAvailableSemaphores[i], nullptr);
+            vkDestroySemaphore(m_device, m_renderFinishedSemaphores[i], nullptr);
+            vkDestroyFence(m_device, m_inFlightFences[i], nullptr);
+        }
         vkDestroyCommandPool(m_device, m_commandPool, nullptr);
 
         for (auto framebuffer : m_swapChainFramebuffers) {
