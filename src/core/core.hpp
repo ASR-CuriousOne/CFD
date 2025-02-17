@@ -1,7 +1,7 @@
 #ifndef CORE_H
 #define CORE_H
-
 #include <cstdint>
+#include <cwchar>
 #include <optional>
 #include <vector>
 #include <vulkan/vulkan_core.h>
@@ -37,14 +37,18 @@ namespace Core{
         VkSwapchainKHR m_swapChain = VK_NULL_HANDLE;
         std::vector<VkImage> m_swapChainImages;
         VkFormat m_swapChainImageFormat;
-        VkExtent2D swapChainExtent;
+        VkExtent2D m_swapChainExtent;
         std::vector<VkImageView> m_swapChainImageViews;
+        VkPipelineLayout m_pipelineLayout;
+        VkRenderPass m_renderPass;
+        VkPipeline m_graphicsPipeline;
+
        
         const std::vector<const char*> validationLayers = {
             "VK_LAYER_KHRONOS_validation"
         };
         const std::vector<const char*> m_deviceExtensions = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME
+VK_KHR_SWAPCHAIN_EXTENSION_NAME
         };
 
 
@@ -90,6 +94,11 @@ namespace Core{
 
         //Make ImageViews 
         void createImageViews();
+
+        //Create Render Pipeline
+        void createGraphicsPipeline();
+        VkShaderModule createShaderModule(const std::vector<char>& code);       
+        void createRenderPass();
 
         VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger); 
 
