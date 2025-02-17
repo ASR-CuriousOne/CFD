@@ -10,10 +10,6 @@ BIN = App
 SRC = $(wildcard $(SRC_DIR)/*/*.cpp)
 OBJ = $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SRC))
 
-SRC_VERTS = $(wildcard $(SRC_DIR)/shaders/*.vert)
-OBJ_VERTS = $(patsubst $(SRC_DIR)/%.vert, $(BUILD_DIR)/%.spv, $(SRC_VERTS))
-SRC_FRAGS = $(wildcard $(SRC_DIR)/shaders/*.frag)
-OBJ_FRAGS = $(patsubst $(SRC_DIR)/%.frag, $(BUILD_DIR)/%.spv, $(SRC_FRAGS))
 # Default target
 all: $(BIN)
 
