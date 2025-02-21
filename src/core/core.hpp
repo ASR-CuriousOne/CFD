@@ -51,6 +51,7 @@ namespace Core{
         std::vector<VkSemaphore> m_renderFinishedSemaphores;
         std::vector<VkFence> m_inFlightFences;
         uint32_t currentFrame = 0;
+        bool framebufferResized = false;
 
        
         const std::vector<const char*> validationLayers = {
@@ -90,6 +91,10 @@ VK_KHR_SWAPCHAIN_EXTENSION_NAME
 
         //Make Logical Devices
         void createLogicalDevice();
+
+        //Recreation Of Swap chain
+        void cleanUpSwapChain();
+        void reCreateSwapChain();
         
         //create Surface
         void createSurface();
@@ -131,6 +136,11 @@ VK_KHR_SWAPCHAIN_EXTENSION_NAME
         ~Application();
 
         void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT m_debugMessenger, const VkAllocationCallbacks* pAllocator);
+
+        static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+            auto app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
+            app->framebufferResized = true;
+        }
     };
 }
 #endif
