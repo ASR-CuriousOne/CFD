@@ -2,6 +2,7 @@
 #define CORE_H
 #include <cstdint>
 #include <cwchar>
+#include <glm/ext/scalar_uint_sized.hpp>
 #include <optional>
 #include <vector>
 #include <array>
@@ -86,14 +87,27 @@ namespace Core{
         bool framebufferResized = false;
         VkBuffer m_vertexBuffer;
         VkDeviceMemory m_vertexBufferMemory;
+        VkBuffer m_indexBuffer;
+        VkDeviceMemory m_indexBufferMemory;
 
         const std::vector<Vertex> m_vertices = {
-            {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-            {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-            {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+            {{0.0f,0.0f}, {0.1f, 0.1f, 0.1f}},
+            {{0.0f,0.5f}, {1.0f, 0.0f, 0.0f}},
+            {{-0.433012701892f, 0.25f}, {1.0f, 0.0f, 1.0f}},
+            {{-0.433012701892, -0.25f}, {0.0f, 0.0f, 1.0f}},
+            {{-0.0f, -0.5f}, {0.0f, 1.0f, 1.0f}},
+            {{0.433012701892, -0.25f}, {0.0f, 1.0f, 0.0f}},
+            {{0.433012701892, 0.25f}, {1.0f, 1.0f, 0.0f}},
         };
-
-
+        
+        const std::vector<uint16_t> m_indices = {
+            0 ,1 ,2 ,
+            0 ,2 ,3 ,
+            0 ,3 ,4 ,
+            0 ,4 ,5 ,
+            0 ,5 ,6 ,
+            0 ,6 ,1 ,
+        };
        
         const std::vector<const char*> validationLayers = {
             "VK_LAYER_KHRONOS_validation"
@@ -157,10 +171,17 @@ VK_KHR_SWAPCHAIN_EXTENSION_NAME
 
         //Create Frame Buffers
         void createFramebuffers();
+        
+        //Create Buffers
+        void createBuffer(VkDeviceSize size,VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+        void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
         //Create Vertex Buffers
         void createVertexBuffer();
         uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+        //Create Index Buffers
+        void createIndexBuffer();
 
         //Create Command Buffer
         void createCommandPool();
