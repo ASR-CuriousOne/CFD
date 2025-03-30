@@ -1,6 +1,7 @@
 #ifndef CORE_H
 #define CORE_H
 #define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <cstdint>
 #include <cwchar>
 #include <glm/ext/scalar_uint_sized.hpp>
@@ -126,6 +127,11 @@ namespace Core{
         VkImageView m_textureImageView;
         VkSampler m_textureSampler;
 
+        VkImage m_depthImage;
+        VkDeviceMemory m_depthImageMemory;
+        VkImageView m_depthImageView;
+
+
 
         //Hexagon
         /*const std::vector<Vertex> m_vertices = {
@@ -150,25 +156,65 @@ namespace Core{
 
         //Quad
         
-        const std::vector<Vertex> m_vertices = {
-            {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.5f, 0.0f}},
-            {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-            {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.5f}},
-            {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.5f, 0.5f}},
+        const float texSize = 0.25f; // 1/4th of the full texture
 
-            {{-0.5f, -0.5f,-0.3f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.5f}},
-            {{0.5f, -0.5f,-0.3f}, {0.0f, 1.0f, 0.0f}, {0.5f, 0.5f}},
-            {{0.5f, 0.5f,-0.3f}, {0.0f, 0.0f, 1.0f}, {0.5f, 1.0f}},
-            {{-0.5f, 0.5f,-0.3f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+const std::vector<Vertex> m_vertices = {
+    // Front face (Region 0,0)
+    {{-0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.00f, 0.00f}},  
+    {{ 0.5f, -0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {texSize, 0.00f}},  
+    {{ 0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {texSize, texSize}},  
+    {{-0.5f,  0.5f,  0.5f}, {1.0f, 1.0f, 1.0f}, {0.00f, texSize}},  
 
-        };
+    // Back face (Region 1,0)
+    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {texSize, 0.00f}},  
+    {{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {texSize * 2, 0.00f}},  
+    {{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {texSize * 2, texSize}},  
+    {{-0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {texSize, texSize}},  
 
+    // Left face (Region 2,0)
+    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {texSize * 2, 0.00f}},  
+    {{-0.5f, -0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {texSize * 3, 0.00f}},  
+    {{-0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {texSize * 3, texSize}},  
+    {{-0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {texSize * 2, texSize}},  
+
+    // Right face (Region 3,0)
+    {{ 0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {texSize * 3, 0.00f}},  
+    {{ 0.5f, -0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {texSize * 4, 0.00f}},  
+    {{ 0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {texSize * 4, texSize}},  
+    {{ 0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {texSize * 3, texSize}},  
+
+    // Top face (Region 0,1)
+    {{-0.5f,  0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.00f, texSize}},  
+    {{ 0.5f,  0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {texSize, texSize}},  
+    {{ 0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {texSize, texSize * 2}},  
+    {{-0.5f,  0.5f,  0.5f}, {1.0f, 1.0f, 1.0f}, {0.00f, texSize * 2}},  
+
+    // Bottom face (Region 1,1)
+    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {texSize, texSize}},  
+    {{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {texSize * 2, texSize}},  
+    {{ 0.5f, -0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {texSize * 2, texSize * 2}},  
+    {{-0.5f, -0.5f,  0.5f}, {1.0f, 1.0f, 1.0f}, {texSize, texSize * 2}},  
+};
         const std::vector<uint16_t> m_indices = {
-            0, 1, 2,
-            2, 3, 0,
-            4, 5, 6,
-            6, 7, 4
-        };
+    // Front face
+    0, 1, 2,
+    2, 3, 0,
+    // Back face
+    4, 5, 6,
+    6, 7, 4,
+    // Left face
+    8, 9, 10,
+    10, 11, 8,
+    // Right face
+    12, 13, 14,
+    14, 15, 12,
+    // Top face
+    16, 17, 18,
+    18, 19, 16,
+    // Bottom face
+    20, 21, 22,
+    22, 23, 20
+};
 
         const std::vector<const char*> validationLayers = {
             "VK_LAYER_KHRONOS_validation"
@@ -224,7 +270,7 @@ VK_KHR_SWAPCHAIN_EXTENSION_NAME
 
         //Make ImageViews 
         void createImageViews();
-        VkImageView createImageViewForImage(VkImage image, VkFormat format);
+        VkImageView createImageViewForImage(VkImage image, VkFormat format,VkImageAspectFlags aspectFlag);
 
         //Create Render Pipeline
         void createGraphicsPipeline();
@@ -266,7 +312,12 @@ VK_KHR_SWAPCHAIN_EXTENSION_NAME
         void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
         void createTextureImageView();
         void createTextureSampler();
-    
+
+        //create Depth Buffer
+        void createDepthResources();
+        VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);    
+        VkFormat findDepthFormat();
+        bool hasStencilComponent(VkFormat format);
 
         //Drawing to Frame
         void drawFrame();
