@@ -9,7 +9,7 @@
 #include <array>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <chrono>
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h> 
@@ -33,8 +33,9 @@ namespace Core{
     };
 
     struct Vertex{
-        glm::vec2 pos;
+        glm::vec3 pos;
         glm::vec3 color;
+        glm::vec2 texCoord;
 
         static VkVertexInputBindingDescription getBindingDescription() {
             VkVertexInputBindingDescription bindingDescription{};
@@ -45,17 +46,22 @@ namespace Core{
             return bindingDescription;
         }
 
-        static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
-            std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+        static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
+            std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
             attributeDescriptions[0].binding = 0;
             attributeDescriptions[0].location = 0;
-            attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+            attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
             attributeDescriptions[0].offset = offsetof(Vertex, pos);
 
             attributeDescriptions[1].binding = 0;
             attributeDescriptions[1].location = 1;
             attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
             attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+            attributeDescriptions[2].binding = 0;
+            attributeDescriptions[2].location = 2;
+            attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+            attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
 
             return attributeDescriptions;
         }
@@ -115,8 +121,14 @@ namespace Core{
         VkDescriptorPool m_descriptorPool;;
         std::vector<VkDescriptorSet> m_descriptorSets;
 
+        VkImage m_textureImage;
+        VkDeviceMemory m_textureImageMemory;
+        VkImageView m_textureImageView;
+        VkSampler m_textureSampler;
 
-        const std::vector<Vertex> m_vertices = {
+
+        //Hexagon
+        /*const std::vector<Vertex> m_vertices = {
             {{0.0f,0.0f}, {0.1f, 0.1f, 0.1f}},
             {{0.0f,0.5f}, {1.0f, 0.0f, 0.0f}},
             {{-0.433012701892f, 0.25f}, {0.707106781187f, 0.0f, 0.707106781187f}},
@@ -125,6 +137,7 @@ namespace Core{
             {{0.433012701892, -0.25f}, {0.0f, 1.0f, 0.0f}},
             {{0.433012701892, 0.25f}, {0.707106781187f, 0.707106781187f, 0.0f}},
         };
+
         
         const std::vector<uint16_t> m_indices = {
             0 ,1 ,2 ,
@@ -133,8 +146,30 @@ namespace Core{
             0 ,4 ,5 ,
             0 ,5 ,6 ,
             0 ,6 ,1 ,
+        };*/
+
+        //Quad
+        
+        const std::vector<Vertex> m_vertices = {
+            {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.5f, 0.0f}},
+            {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+            {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.5f}},
+            {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.5f, 0.5f}},
+
+            {{-0.5f, -0.5f,-0.3f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.5f}},
+            {{0.5f, -0.5f,-0.3f}, {0.0f, 1.0f, 0.0f}, {0.5f, 0.5f}},
+            {{0.5f, 0.5f,-0.3f}, {0.0f, 0.0f, 1.0f}, {0.5f, 1.0f}},
+            {{-0.5f, 0.5f,-0.3f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+
         };
-       
+
+        const std::vector<uint16_t> m_indices = {
+            0, 1, 2,
+            2, 3, 0,
+            4, 5, 6,
+            6, 7, 4
+        };
+
         const std::vector<const char*> validationLayers = {
             "VK_LAYER_KHRONOS_validation"
         };
@@ -189,6 +224,7 @@ VK_KHR_SWAPCHAIN_EXTENSION_NAME
 
         //Make ImageViews 
         void createImageViews();
+        VkImageView createImageViewForImage(VkImage image, VkFormat format);
 
         //Create Render Pipeline
         void createGraphicsPipeline();
@@ -220,6 +256,17 @@ VK_KHR_SWAPCHAIN_EXTENSION_NAME
         void createCommandPool();
         void createCommandBuffers();
         void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+        VkCommandBuffer beginSingleTimeCommands();
+        void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+
+        //create Texture Image
+        void createTextureImage();     
+        void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+        void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);    
+        void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+        void createTextureImageView();
+        void createTextureSampler();
+    
 
         //Drawing to Frame
         void drawFrame();
