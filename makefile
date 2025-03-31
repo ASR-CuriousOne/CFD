@@ -18,7 +18,7 @@ ifeq ($(OS), Windows_NT)  # Windows
 else  # Linux/macOS
 	CXXFLAGS = -Wall -Wextra -std=c++17 -g -MMD -MP
 	LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
-	INCLUDE_DIRS := -I $(LIB_DIR)/stb
+	INCLUDE_DIRS := -I $(LIB_DIR)/stb -I $(LIB_DIR)/TinyObjLoader
 	LIB_DIRS := 
 	LIBS :=
     OUT_EXT :=

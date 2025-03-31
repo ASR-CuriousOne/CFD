@@ -1,5 +1,6 @@
 #ifndef CORE_H
 #define CORE_H
+#include <cstddef>
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <cstdint>
@@ -10,7 +11,7 @@
 #include <array>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
+#include <string>
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h> 
@@ -37,6 +38,7 @@ namespace Core{
         glm::vec3 pos;
         glm::vec3 color;
         glm::vec2 texCoord;
+        glm::vec3 normal;
 
         static VkVertexInputBindingDescription getBindingDescription() {
             VkVertexInputBindingDescription bindingDescription{};
@@ -47,8 +49,8 @@ namespace Core{
             return bindingDescription;
         }
 
-        static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
-            std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
+        static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptions() {
+            std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions{};
             attributeDescriptions[0].binding = 0;
             attributeDescriptions[0].location = 0;
             attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
@@ -64,8 +66,18 @@ namespace Core{
             attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
             attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
 
+            attributeDescriptions[3].binding = 0;
+            attributeDescriptions[3].location = 3;
+            attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+            attributeDescriptions[3].offset = offsetof(Vertex, normal);
+
             return attributeDescriptions;
         }
+    };
+
+    struct Mesh{
+        std::vector<Vertex> vertices;
+        std::vector<uint32_t> indices;
     };
 
     struct UniformBufferObject {
@@ -155,10 +167,10 @@ namespace Core{
         };*/
 
         //Quad
-        
+        const std::string TEXTURE_PATH = "textures/map.jpg"; 
         const float texSize = 0.25f; // 1/4th of the full texture
 
-const std::vector<Vertex> m_vertices = {
+/*std::vector<Vertex> m_vertices = {
     // Front face (Region 0,0)
     {{-0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.00f, 0.00f}},  
     {{ 0.5f, -0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {texSize, 0.00f}},  
@@ -195,7 +207,7 @@ const std::vector<Vertex> m_vertices = {
     {{ 0.5f, -0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {texSize * 2, texSize * 2}},  
     {{-0.5f, -0.5f,  0.5f}, {1.0f, 1.0f, 1.0f}, {texSize, texSize * 2}},  
 };
-        const std::vector<uint16_t> m_indices = {
+        std::vector<uint32_t> m_indices = {
     // Front face
     0, 1, 2,
     2, 3, 0,
@@ -214,7 +226,10 @@ const std::vector<Vertex> m_vertices = {
     // Bottom face
     20, 21, 22,
     22, 23, 20
-};
+};*/
+
+        std::vector<Vertex> m_vertices;
+        std::vector<uint32_t> m_indices;
 
         const std::vector<const char*> validationLayers = {
             "VK_LAYER_KHRONOS_validation"
@@ -290,6 +305,9 @@ VK_KHR_SWAPCHAIN_EXTENSION_NAME
         void updateUniformBuffer(uint32_t currentImage);
         void createDescriptorPool();
         void createDescriptorSets();
+
+        //Mesh Work
+        void loadModel();
 
         //Create Vertex Buffers
         void createVertexBuffer();

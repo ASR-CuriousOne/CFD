@@ -1,4 +1,7 @@
+#include <cmath>
 #include <cstdint>
+#include <glm/ext/matrix_float4x4.hpp>
+#include <glm/ext/matrix_transform.hpp>
 #include <ostream>
 #include <set>
 #include <cstring>
@@ -85,6 +88,7 @@ namespace Core{
         createTextureImage();
         createTextureImageView();
         createTextureSampler();
+        loadModel();
         createVertexBuffer();
         createIndexBuffer();
         createUniformBuffers();
@@ -864,9 +868,9 @@ namespace Core{
         float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
         UniformBufferObject ubo{};
-        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        ubo.view = glm::lookAt(glm::vec3(3.0f, 3.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.proj = glm::perspective(glm::radians(27.0f), m_swapChainExtent.width / (float)m_swapChainExtent.height, 0.1f, 10.0f);
+        ubo.model = glm::rotate(glm::rotate(glm::mat4(1.0f),glm::radians(23.0f) * cos(time/(float)5), glm::vec3(0.0f,1.0f,0.0f)), time * glm::radians(85.0f) , glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.view = glm::lookAt(glm::vec3(1.5f * cos(time * 0), 2.0f * cos(time * 0), 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.proj = glm::perspective(glm::radians(80.0f), m_swapChainExtent.width / (float)m_swapChainExtent.height, 0.1f, 10.0f);
         
         ubo.proj[1][1] *= -1;
 
@@ -1058,7 +1062,7 @@ namespace Core{
         VkDeviceSize offsets[] = {0};
 
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-        vkCmdBindIndexBuffer(commandBuffer, m_indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+        vkCmdBindIndexBuffer(commandBuffer, m_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSets[currentFrame], 0, nullptr);
 
@@ -1121,7 +1125,7 @@ namespace Core{
     //Create Texture Image
     void Application::createTextureImage(){
         int texWidth, texHeight, texChannels;
-        stbi_uc* pixels = stbi_load("textures/checker-map_tho.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+        stbi_uc* pixels = stbi_load(TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
         VkDeviceSize imageSize = texWidth * texHeight * 4;
 
         if (!pixels) {
