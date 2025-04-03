@@ -55,3 +55,7 @@ run: all
 	./$(BIN)
 
 .PHONY: all clean run
+
+release:
+	$(MAKE) clean
+	$(MAKE) CXXFLAGS="$(filter-out -g,$(CXXFLAGS)) -O3" BIN="AppRelease$(OUT_EXT)"
