@@ -39,6 +39,7 @@ namespace Core{
         glm::vec3 color;
         glm::vec2 texCoord;
         glm::vec3 normal;
+        glm::vec3 tangent;
 
         static VkVertexInputBindingDescription getBindingDescription() {
             VkVertexInputBindingDescription bindingDescription{};
@@ -49,8 +50,8 @@ namespace Core{
             return bindingDescription;
         }
 
-        static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptions() {
-            std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions{};
+        static std::array<VkVertexInputAttributeDescription, 5> getAttributeDescriptions() {
+            std::array<VkVertexInputAttributeDescription, 5> attributeDescriptions{};
             attributeDescriptions[0].binding = 0;
             attributeDescriptions[0].location = 0;
             attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
@@ -70,6 +71,11 @@ namespace Core{
             attributeDescriptions[3].location = 3;
             attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
             attributeDescriptions[3].offset = offsetof(Vertex, normal);
+
+            attributeDescriptions[4].binding = 0;
+            attributeDescriptions[4].location = 4;
+            attributeDescriptions[4].format = VK_FORMAT_R32G32B32_SFLOAT;
+            attributeDescriptions[4].offset = offsetof(Vertex, tangent);
 
             return attributeDescriptions;
         }
@@ -127,6 +133,7 @@ namespace Core{
         VkDeviceMemory m_vertexBufferMemory;
         VkBuffer m_indexBuffer;
         VkDeviceMemory m_indexBufferMemory;
+        std::string MODEL_PATH = "models/Sphere.obj";
 
         std::vector<VkBuffer> m_uniformBuffers;
         std::vector<VkDeviceMemory> m_uniformBuffersMemory;
@@ -138,6 +145,13 @@ namespace Core{
         VkDeviceMemory m_textureImageMemory;
         VkImageView m_textureImageView;
         VkSampler m_textureSampler;
+        std::string TEXTURE_PATH = "textures/rockyDiffuse.png";       
+
+        VkImage m_NormalMap;
+        VkDeviceMemory m_NormalMapMemory;
+        VkImageView m_NormalMapImageView;
+        VkSampler m_NormalMapSampler;
+        std::string NORMAL_PATH = "textures/rockyNormal.png";
 
         VkImage m_depthImage;
         VkDeviceMemory m_depthImageMemory;
@@ -167,7 +181,7 @@ namespace Core{
         };*/
 
         //Quad
-        const std::string TEXTURE_PATH = "textures/map.jpg"; 
+        
         const float texSize = 0.25f; // 1/4th of the full texture
 
 /*std::vector<Vertex> m_vertices = {
@@ -324,7 +338,8 @@ VK_KHR_SWAPCHAIN_EXTENSION_NAME
         void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 
         //create Texture Image
-        void createTextureImage();     
+        void createAllTextures();
+        void createTextureImage(VkDevice device,const std::string& texturePath,VkImage& textureImage, VkDeviceMemory& textureImageMemory,VkFormat ImageFormat);     
         void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
         void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);    
         void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);

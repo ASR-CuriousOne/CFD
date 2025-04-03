@@ -1,0 +1,3 @@
+models/Susan.obj
+textures/Monkey.png
+textures/MonkeyNormal.png
