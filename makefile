@@ -1,9 +1,11 @@
 CXX = g++
 SRC_DIR = src
 BUILD_DIR = build
+LIB_DIR = lib
 
-VULKAN_SDK := C:/VulkanSDK/1.4.304.0# Change this to your Vulkan SDK path
+VULKAN_SDK := C:/VulkanSDK/1.4.304.0
 GLFW_DIR := C:/glfw/glfw-3.4.bin.WIN64
+STB_INCLUDE_PATH = /home/user/libraries/stb
 
 ifeq ($(OS), Windows_NT)  # Windows
     OUT_EXT := .exe
@@ -16,7 +18,7 @@ ifeq ($(OS), Windows_NT)  # Windows
 else  # Linux/macOS
 	CXXFLAGS = -Wall -Wextra -std=c++17 -g -MMD -MP
 	LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
-	INCLUDE_DIRS :=
+	INCLUDE_DIRS := -I $(LIB_DIR)/stb -I $(LIB_DIR)/TinyObjLoader
 	LIB_DIRS := 
 	LIBS :=
     OUT_EXT :=
@@ -53,3 +55,7 @@ run: all
 	./$(BIN)
 
 .PHONY: all clean run
+
+release:
+	$(MAKE) clean
+	$(MAKE) CXXFLAGS="$(filter-out -g,$(CXXFLAGS)) -O3" BIN="AppRelease$(OUT_EXT)"
