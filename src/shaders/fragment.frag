@@ -12,10 +12,10 @@ layout(location = 5) in vec3 fragBiTangent;
 
 layout(location = 0) out vec4 outColor;
 
-const vec3 lightPos = vec3(-3,1,1);
+const vec3 lightPos = vec3(300,0,0);
 const vec3 lightColor = vec3(1.0, 0.9, 0.9);
-const float lightPower = 10;
-const float factor = -1;
+const float lightPower = 100000;
+const float factor = 1;
 
 const vec3 specColor = vec3(0.1, 0.1, 0.1);
 const float shininess = 100;
@@ -25,7 +25,7 @@ void main() {
     vec3 normalMap = ((texture(normalSampler,fragTexCoord)).rgb) * 2.0f - 1.0f;
 
     vec3 diffuseColor = texture(texSampler,fragTexCoord).rgb;
-    vec3 ambientColor = vec3(0.0,0.0,0.0);
+    vec3 ambientColor = diffuseColor * 0.0001f;
 
     vec3 normal = (normalMap.r * fragTangent  + normalMap.g * fragBiTangent) * factor + normalMap.b * fragNormal;
     normal = normalize(normal);
@@ -52,9 +52,9 @@ void main() {
         specColor * specular * lightColor * lightPower / distance ;
     // apply gamma correction (assume ambientColor, diffuseColor and specColor
     // have been linearized, i.e. have no gamma correction in them)
-    //vec3 colorGammaCorrected = pow(colorLinear, vec3(1.0 / screenGamma));
+    vec3 colorGammaCorrected = pow(colorLinear, vec3(1.0 / screenGamma));
     // use the gamma corrected color in the fragment 
      
-    outColor = vec4(colorLinear,1.0f);
+    outColor = vec4(colorGammaCorrected,1.0f);
 
 }

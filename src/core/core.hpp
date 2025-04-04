@@ -1,20 +1,23 @@
 #ifndef CORE_H
 #define CORE_H
-#include <cstddef>
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <cstdint>
-#include <cwchar>
-#include <glm/ext/scalar_uint_sized.hpp>
-#include <optional>
-#include <vector>
-#include <array>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <string>
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h> 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <cstdint>
+#include <cwchar>
+#include <optional>
+#include <vector>
+#include <array>
+#include <string>
+#include <cstddef>
+#include <iostream>
+
+#include "input.hpp"
 
 namespace Core{
     struct QueueFamilyIndices {
@@ -99,6 +102,9 @@ namespace Core{
 
         VkInstance m_vkInstance;
 
+        Input m_input;
+        float azimuth = 0 , altitude = 60.0f , radius = 2.0f;
+
         VkDebugUtilsMessengerEXT m_debugMessenger = VK_NULL_HANDLE;
 
         VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
@@ -158,90 +164,6 @@ namespace Core{
         VkImageView m_depthImageView;
 
 
-
-        //Hexagon
-        /*const std::vector<Vertex> m_vertices = {
-            {{0.0f,0.0f}, {0.1f, 0.1f, 0.1f}},
-            {{0.0f,0.5f}, {1.0f, 0.0f, 0.0f}},
-            {{-0.433012701892f, 0.25f}, {0.707106781187f, 0.0f, 0.707106781187f}},
-            {{-0.433012701892, -0.25f}, {0.0f, 0.0f, 1.0f}},
-            {{-0.0f, -0.5f}, {0.0f, 0.707106781187f, 0.707106781187f}},
-            {{0.433012701892, -0.25f}, {0.0f, 1.0f, 0.0f}},
-            {{0.433012701892, 0.25f}, {0.707106781187f, 0.707106781187f, 0.0f}},
-        };
-
-        
-        const std::vector<uint16_t> m_indices = {
-            0 ,1 ,2 ,
-            0 ,2 ,3 ,
-            0 ,3 ,4 ,
-            0 ,4 ,5 ,
-            0 ,5 ,6 ,
-            0 ,6 ,1 ,
-        };*/
-
-        //Quad
-        
-        const float texSize = 0.25f; // 1/4th of the full texture
-
-/*std::vector<Vertex> m_vertices = {
-    // Front face (Region 0,0)
-    {{-0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.00f, 0.00f}},  
-    {{ 0.5f, -0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {texSize, 0.00f}},  
-    {{ 0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {texSize, texSize}},  
-    {{-0.5f,  0.5f,  0.5f}, {1.0f, 1.0f, 1.0f}, {0.00f, texSize}},  
-
-    // Back face (Region 1,0)
-    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {texSize, 0.00f}},  
-    {{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {texSize * 2, 0.00f}},  
-    {{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {texSize * 2, texSize}},  
-    {{-0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {texSize, texSize}},  
-
-    // Left face (Region 2,0)
-    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {texSize * 2, 0.00f}},  
-    {{-0.5f, -0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {texSize * 3, 0.00f}},  
-    {{-0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {texSize * 3, texSize}},  
-    {{-0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {texSize * 2, texSize}},  
-
-    // Right face (Region 3,0)
-    {{ 0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {texSize * 3, 0.00f}},  
-    {{ 0.5f, -0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {texSize * 4, 0.00f}},  
-    {{ 0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {texSize * 4, texSize}},  
-    {{ 0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {texSize * 3, texSize}},  
-
-    // Top face (Region 0,1)
-    {{-0.5f,  0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.00f, texSize}},  
-    {{ 0.5f,  0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {texSize, texSize}},  
-    {{ 0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {texSize, texSize * 2}},  
-    {{-0.5f,  0.5f,  0.5f}, {1.0f, 1.0f, 1.0f}, {0.00f, texSize * 2}},  
-
-    // Bottom face (Region 1,1)
-    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {texSize, texSize}},  
-    {{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {texSize * 2, texSize}},  
-    {{ 0.5f, -0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {texSize * 2, texSize * 2}},  
-    {{-0.5f, -0.5f,  0.5f}, {1.0f, 1.0f, 1.0f}, {texSize, texSize * 2}},  
-};
-        std::vector<uint32_t> m_indices = {
-    // Front face
-    0, 1, 2,
-    2, 3, 0,
-    // Back face
-    4, 5, 6,
-    6, 7, 4,
-    // Left face
-    8, 9, 10,
-    10, 11, 8,
-    // Right face
-    12, 13, 14,
-    14, 15, 12,
-    // Top face
-    16, 17, 18,
-    18, 19, 16,
-    // Bottom face
-    20, 21, 22,
-    22, 23, 20
-};*/
-
         std::vector<Vertex> m_vertices;
         std::vector<uint32_t> m_indices;
 
@@ -262,7 +184,10 @@ VK_KHR_SWAPCHAIN_EXTENSION_NAME
 
          public:
         Application();
- 
+
+        GLFWwindow* getWindow(){
+            return m_window;
+        } 
 
         void InitializeWindow();
 
@@ -361,6 +286,12 @@ VK_KHR_SWAPCHAIN_EXTENSION_NAME
         void InitializeVulkan();
         
         void StartLoop();
+        static void scrollCallback(GLFWwindow* window,double xOffset,double yOffset){
+            //std::cout << yOffset << '\n';
+            float radiusSensitivity = 0.1;
+            auto app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
+            app->radius -= radiusSensitivity * yOffset;
+        }
          
         ~Application();
 
